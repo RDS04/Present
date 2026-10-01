@@ -185,7 +185,7 @@
 
             <!-- Main CTA Button -->
             <div>
-                <button onclick="goToFormScreen()"
+                <button id="ctaBtn" onclick="goToFormScreen()"
                     class="px-8 py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-sky-500/25 transition-all duration-200 transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer border border-sky-400/30">
                     <svg class="w-4 h-4 text-sky-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -197,6 +197,14 @@
                             d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </button>
+                <div id="thankYouMsg"
+                    class="hidden px-6 py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg backdrop-blur-md">
+                    <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Terima kasih sudah mengisi absen</span>
+                </div>
             </div>
 
         </div>
@@ -333,6 +341,21 @@
         const hasActiveSession = @json((bool) $activeSession);
         const activeSessionId = @json($activeSession ? $activeSession->id : null);
 
+        function checkSubmissionStatus() {
+            const ctaBtn = document.getElementById('ctaBtn');
+            const thankYouMsg = document.getElementById('thankYouMsg');
+
+            if (activeSessionId && localStorage.getItem('absen_submitted_session_' + activeSessionId) === 'true') {
+                if (ctaBtn) ctaBtn.classList.add('hidden');
+                if (thankYouMsg) thankYouMsg.classList.remove('hidden');
+            } else {
+                if (ctaBtn) ctaBtn.classList.remove('hidden');
+                if (thankYouMsg) thankYouMsg.classList.add('hidden');
+            }
+        }
+
+        checkSubmissionStatus();
+
         function goToFormScreen() {
             if (!hasActiveSession) {
                 Swal.fire({
@@ -421,6 +444,11 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
+                    if (activeSessionId) {
+                        localStorage.setItem('absen_submitted_session_' + activeSessionId, 'true');
+                    }
+                    checkSubmissionStatus();
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Presensi Berhasil!',
@@ -437,6 +465,11 @@
                         goToWelcomeScreen();
                     });
                 } else if (result.already_submitted) {
+                    if (activeSessionId) {
+                        localStorage.setItem('absen_submitted_session_' + activeSessionId, 'true');
+                    }
+                    checkSubmissionStatus();
+
                     Swal.fire({
                         icon: 'info',
                         title: 'Presensi Terverifikasi',
