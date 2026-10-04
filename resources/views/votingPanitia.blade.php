@@ -14,7 +14,8 @@
 
     <!-- Tailwind CSS (Vite + CDN fallback) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -446,18 +447,59 @@
 
                     closeVoteConfirmation();
                     
-                    // Alert sukses & reload halaman agar UI terupdate penuh
-                    alert(`✅ ${data.message}`);
-                    window.location.reload();
-                } else {
-                    alert(`⚠️ ${data.message || 'Gagal mengirim voting.'}`);
-                    if (data.already_voted) {
+                    // SweetAlert2 Terima Kasih sudah voting & reload halaman agar UI terupdate penuh
+                    Swal.fire({
+                        title: '🎉 Terima Kasih!',
+                        text: data.message || `Suara Anda untuk Kakak ${data.candidate_name} berhasil disimpan! Terima kasih telah berpartisipasi.`,
+                        icon: 'success',
+                        confirmButtonText: 'Sama-sama & Selesai',
+                        confirmButtonColor: '#9333ea',
+                        background: '#0f172a',
+                        color: '#f8fafc',
+                        customClass: {
+                            popup: 'rounded-3xl border border-purple-500/40 shadow-2xl',
+                            title: 'text-white font-black text-2xl',
+                            htmlContainer: 'text-slate-300 text-sm font-medium',
+                            confirmButton: 'rounded-2xl font-extrabold px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/30'
+                        }
+                    }).then(() => {
                         window.location.reload();
-                    }
+                    });
+                } else {
+                    Swal.fire({
+                        title: data.already_voted ? '🔒 Hak Suara Telah Digunakan' : '⚠️ Perhatian',
+                        text: data.message || 'Gagal mengirim voting.',
+                        icon: data.already_voted ? 'info' : 'warning',
+                        confirmButtonText: 'Mengerti',
+                        confirmButtonColor: '#9333ea',
+                        background: '#0f172a',
+                        color: '#f8fafc',
+                        customClass: {
+                            popup: 'rounded-3xl border border-purple-500/40 shadow-2xl',
+                            title: 'text-white font-bold text-xl',
+                            htmlContainer: 'text-slate-300 text-sm',
+                            confirmButton: 'rounded-2xl font-bold px-6 py-2.5 bg-purple-600 text-white'
+                        }
+                    }).then(() => {
+                        if (data.already_voted) {
+                            window.location.reload();
+                        }
+                    });
                 }
             } catch (err) {
                 console.error(err);
-                alert('⚠️ Terjadi kesalahan koneksi internet. Silakan periksa jaringan Anda dan coba lagi.');
+                Swal.fire({
+                    title: '⚠️ Kesalahan Jaringan',
+                    text: 'Terjadi kesalahan koneksi internet. Silakan periksa jaringan Anda dan coba lagi.',
+                    icon: 'error',
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#e11d48',
+                    background: '#0f172a',
+                    color: '#f8fafc',
+                    customClass: {
+                        popup: 'rounded-3xl border border-rose-500/40 shadow-2xl'
+                    }
+                });
             } finally {
                 btnSubmit.disabled = false;
                 btnText.textContent = 'Ya, Kirim Vote';
