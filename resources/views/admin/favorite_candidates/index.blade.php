@@ -82,7 +82,7 @@
                     <!-- Nama Kakak Panitia -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Nama Lengkap Kakak Panitia <span class="text-rose-500">*</span>
+                            Nama Panggilan Kakak Panitia <span class="text-rose-500">*</span>
                         </label>
                         <input type="text" 
                                name="name" 
@@ -127,15 +127,6 @@
                     </div>
 
                     <!-- Deskripsi / Quote -->
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Deskripsi / Alasan / Quote (Opsional)
-                        </label>
-                        <textarea name="description" 
-                                  rows="3" 
-                                  placeholder="Contoh: Kakak pendamping teramah & selalu siap membantu gugus." 
-                                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition">{{ old('description') }}</textarea>
-                    </div>
 
                     <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
                         💾 Simpan Nominasi Panitia

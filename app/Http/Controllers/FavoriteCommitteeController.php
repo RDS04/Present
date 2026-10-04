@@ -203,7 +203,7 @@ class FavoriteCommitteeController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = 'panitia_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
-            
+
             // Pastikan folder public/uploads/candidates ada
             $uploadPath = public_path('uploads/candidates');
             if (!file_exists($uploadPath)) {
