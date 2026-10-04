@@ -20,8 +20,8 @@
                     <flux:navlist.item icon="calendar" :href="route('event-days.index')" :current="request()->routeIs('event-days.*')" wire:navigate>Kelola Sesi Acara</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('groups.index')" :current="request()->routeIs('groups.*')" wire:navigate>Kelola Gugus</flux:navlist.item>
                     <flux:navlist.item icon="briefcase" :href="route('committee-sections.index')" :current="request()->routeIs('committee-sections.*')" wire:navigate>Seksi / Divisi Panitia</flux:navlist.item>
-                    <flux:navlist.item icon="sparkles" :href="route('favorite-candidates.index')" :current="request()->routeIs('favorite-candidates.*')" wire:navigate>Voting Panitia Terfavorit</flux:navlist.item>
                     @endif
+                    <flux:navlist.item icon="sparkles" :href="route('favorite-candidates.index')" :current="request()->routeIs('favorite-candidates.*')" wire:navigate>Voting Panitia Terfavorit</flux:navlist.item>
                 </flux:navlist.group>
 
                 @if(auth()->user() && auth()->user()->isAdminSekretariat())
@@ -51,6 +51,7 @@
             </flux:navlist>
 
             <!-- Desktop User Menu -->
+            @auth
             <flux:dropdown position="bottom" align="start">
                 <flux:profile
                     :name="auth()->user()->name"
@@ -94,6 +95,13 @@
                     </form>
                 </flux:menu>
             </flux:dropdown>
+            @else
+            <div class="p-2">
+                <a href="{{ route('login') }}" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition">
+                    🔑 Login Admin
+                </a>
+            </div>
+            @endauth
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
@@ -102,6 +110,7 @@
 
             <flux:spacer />
 
+            @auth
             <flux:dropdown position="top" align="end">
                 <flux:profile
                     :initials="auth()->user()->initials()"
@@ -144,7 +153,11 @@
                     </form>
                 </flux:menu>
             </flux:dropdown>
-        </flux:header>
+            @else
+            <a href="{{ route('login') }}" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg shadow">
+                Login
+            </a>
+            @endauth
 
         {{ $slot }}
 
