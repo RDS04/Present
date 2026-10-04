@@ -12,14 +12,13 @@
                 <svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 <span>Tampilan Voting Public ↗</span>
             </a>
-            @if($totalVotes > 0)
-                <form method="POST" action="{{ route('favorite-candidates.reset-votes') }}" onsubmit="return confirm('Apakah Anda yakin ingin mereset SEMUA hasil suara voting kembali ke 0?')">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-xl shadow-sm transition">
-                        🔄 Reset Suara
-                    </button>
-                </form>
-            @endif
+            <form method="POST" action="{{ route('favorite-candidates.reset-votes') }}" onsubmit="confirmResetAll(event, this)">
+                @csrf
+                <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span>🔄 Reset Semua Voting</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -126,8 +125,6 @@
                         </div>
                     </div>
 
-                    <!-- Deskripsi / Quote -->
-
                     <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
                         💾 Simpan Nominasi Panitia
                     </button>
@@ -205,8 +202,19 @@
                                         </div>
                                     </div>
 
+                                    <!-- Reset Single Candidate Vote Button -->
+                                    @if($candidate->votes_count > 0)
+                                        <form method="POST" action="{{ route('favorite-candidates.reset-candidate', $candidate->id) }}" onsubmit="confirmResetCandidate(event, this, '{{ addslashes($candidate->name) }}', {{ $candidate->votes_count }})">
+                                            @csrf
+                                            <button type="submit" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/80 rounded-xl transition flex items-center gap-1 font-extrabold text-xs shadow-sm" title="Reset Suara Kandidat Ini">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                                <span>Reset Suara</span>
+                                            </button>
+                                        </form>
+                                    @endif
+
                                     <!-- Delete Button -->
-                                    <form method="POST" action="{{ route('favorite-candidates.destroy', $candidate->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kandidat {{ $candidate->name }}? Data foto dan suara juga akan terhapus.')">
+                                    <form method="POST" action="{{ route('favorite-candidates.destroy', $candidate->id) }}" onsubmit="confirmDeleteCandidate(event, this, '{{ addslashes($candidate->name) }}')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition" title="Hapus Kandidat">
@@ -223,7 +231,8 @@
 
     </div>
 
-    <!-- Script Image Preview -->
+    <!-- SweetAlert2 Library & Custom Dialog Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function previewPhoto(event) {
             const input = event.target;
@@ -241,5 +250,100 @@
                 container.classList.add('hidden');
             }
         }
+
+        // SweetAlert2 Confirmation: Reset All Votes
+        function confirmResetAll(event, form) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Reset Semua Voting?',
+                text: 'Apakah Anda yakin ingin MERESET SEMUA HAK SUARA DARI SELURUH KANDIDAT kembali ke 0? Seluruh peserta dapat melakukan voting ulang.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Reset Semua!',
+                cancelButtonText: 'Tidak / Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl font-bold px-4 py-2',
+                    cancelButton: 'rounded-xl font-bold px-4 py-2'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
+        // SweetAlert2 Confirmation: Reset Per-Candidate Vote
+        function confirmResetCandidate(event, form, candidateName, votesCount) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Reset Suara Kandidat?',
+                text: `Apakah Anda yakin ingin mereset ${votesCount} suara kandidat "${candidateName}" kembali ke 0?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d97706',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Reset Suara!',
+                cancelButtonText: 'Tidak / Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl font-bold px-4 py-2',
+                    cancelButton: 'rounded-xl font-bold px-4 py-2'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
+        // SweetAlert2 Confirmation: Delete Candidate
+        function confirmDeleteCandidate(event, form, candidateName) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Hapus Kandidat?',
+                text: `Apakah Anda yakin ingin menghapus kandidat "${candidateName}"? Foto dan data perolehan suara akan terhapus secara permanen.`,
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Tidak / Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl font-bold px-4 py-2',
+                    cancelButton: 'rounded-xl font-bold px-4 py-2'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                timer: 3500,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-2xl' }
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+                customClass: { popup: 'rounded-2xl' }
+            });
+        @endif
     </script>
 </x-layouts.app>

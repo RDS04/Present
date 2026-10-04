@@ -32,6 +32,7 @@ Route::post('/voting-panitia/vote', [FavoriteCommitteeController::class, 'vote']
 Route::get('/favorite-candidates', [FavoriteCommitteeController::class, 'adminIndex'])->name('favorite-candidates.index');
 Route::post('/favorite-candidates', [FavoriteCommitteeController::class, 'storeCandidate'])->name('favorite-candidates.store');
 Route::delete('/favorite-candidates/{candidate}', [FavoriteCommitteeController::class, 'destroyCandidate'])->name('favorite-candidates.destroy');
+Route::post('/favorite-candidates/{candidate}/reset', [FavoriteCommitteeController::class, 'resetCandidateVotes'])->name('favorite-candidates.reset-candidate');
 Route::post('/favorite-candidates/reset-votes', [FavoriteCommitteeController::class, 'resetVotes'])->name('favorite-candidates.reset-votes');
 
 Route::middleware(['auth'])->group(function () {

@@ -33,19 +33,22 @@ class FavoriteCommitteeController extends Controller
         $votedCandidateId = null;
         $votedCandidate = null;
 
-        if ($cookieVotedId) {
-            $hasVoted = true;
-            $votedCandidateId = (int) $cookieVotedId;
-        } elseif ($voterIdentifier) {
+        // Cek kebenaran di database (tabel favorite_committee_votes)
+        $voteRecord = null;
+        if ($voterIdentifier) {
             $voteRecord = FavoriteCommitteeVote::where('voter_identifier', $voterIdentifier)->first();
-            if ($voteRecord) {
-                $hasVoted = true;
-                $votedCandidateId = $voteRecord->candidate_id;
-            }
         }
 
-        if ($votedCandidateId) {
+        if ($voteRecord) {
+            $hasVoted = true;
+            $votedCandidateId = $voteRecord->candidate_id;
             $votedCandidate = $candidates->firstWhere('id', $votedCandidateId);
+        } else {
+            // Jika tidak ada data di database (misal karena di-reset oleh admin), bersihkan cookie lama
+            $hasVoted = false;
+            $votedCandidateId = null;
+            $votedCandidate = null;
+            Cookie::queue(Cookie::forget('voted_candidate_id'));
         }
 
         // Ambil daftar unik seksi panitia untuk filter frontend
@@ -85,21 +88,7 @@ class FavoriteCommitteeController extends Controller
         $voterUuid = $request->cookie('voter_uuid') ?? $request->input('device_uuid') ?? Str::uuid()->toString();
         $voterIdentifier = md5('voter_' . $voterUuid);
 
-        // 1. Cek apakah sudah pernah voting via cookie
-        if ($request->cookie('voted_candidate_id')) {
-            $existingId = (int) $request->cookie('voted_candidate_id');
-            $existingCandidate = FavoriteCommitteeCandidate::find($existingId);
-            $cName = $existingCandidate ? $existingCandidate->name : 'kandidat lain';
-
-            return response()->json([
-                'success' => false,
-                'already_voted' => true,
-                'message' => "Anda sudah melakukan voting sebelumnya! Setiap perangkat hanya diperbolehkan memilih 1 kali.",
-                'voted_candidate_id' => $existingId,
-            ], 422);
-        }
-
-        // 2. Cek apakah voter_identifier sudah ada di database
+        // Cek apakah voter_identifier aktif ada di database
         $existingVote = FavoriteCommitteeVote::where('voter_identifier', $voterIdentifier)->first();
 
         if ($existingVote) {
@@ -232,16 +221,32 @@ class FavoriteCommitteeController extends Controller
     }
 
     /**
+     * Admin Reset Suara Per-Kandidat Spesifik
+     */
+    public function resetCandidateVotes(FavoriteCommitteeCandidate $candidate): RedirectResponse
+    {
+        $name = $candidate->name;
+
+        DB::transaction(function () use ($candidate) {
+            FavoriteCommitteeVote::where('candidate_id', $candidate->id)->delete();
+            $candidate->update(['votes_count' => 0]);
+        });
+
+        return redirect()->route('favorite-candidates.index')
+            ->with('success', "Suara untuk kandidat ({$name}) berhasil direset ke 0!");
+    }
+
+    /**
      * Admin Reset Hasil Voting
      */
     public function resetVotes(): RedirectResponse
     {
         DB::transaction(function () {
-            FavoriteCommitteeVote::truncate();
+            FavoriteCommitteeVote::query()->delete();
             FavoriteCommitteeCandidate::query()->update(['votes_count' => 0]);
         });
 
         return redirect()->route('favorite-candidates.index')
-            ->with('success', 'Semua perolehan suara voting Panitia Terfavorit telah berhasil direset ke 0!');
+            ->with('success', 'Semua perolehan suara voting Kakak Panitia Terfavorit telah berhasil direset ke 0!');
     }
 }

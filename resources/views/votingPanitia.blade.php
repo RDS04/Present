@@ -351,6 +351,12 @@
         const HAS_VOTED_INITIAL = @json($hasVoted);
         let currentSelectedCandidate = null;
 
+        // Reset LocalStorage jika di server status voting sudah di-reset oleh admin
+        if (!HAS_VOTED_INITIAL) {
+            localStorage.removeItem('voted_candidate_id');
+            localStorage.removeItem('voted_candidate_name');
+        }
+
         // Mendapatkan UUID perangkat voter unik
         function getDeviceUuid() {
             let uuid = localStorage.getItem('voter_device_uuid');
