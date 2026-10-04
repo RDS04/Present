@@ -14,6 +14,7 @@ Route::get('/', function () {
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PublicPanitiaAttendanceController;
 use App\Http\Controllers\CommitteeSectionController;
+use App\Http\Controllers\FavoriteCommitteeController;
 
 // Portal Presensi Mandiri Mahasiswa Baru (Public)
 Route::get('/present', [PublicAttendanceController::class, 'index'])->name('present');
@@ -22,6 +23,10 @@ Route::post('/present', [PublicAttendanceController::class, 'store'])->name('pre
 // Portal Presensi Mandiri Panitia (Public)
 Route::get('/present-panitia', [PublicPanitiaAttendanceController::class, 'index'])->name('present.panitia');
 Route::post('/present-panitia', [PublicPanitiaAttendanceController::class, 'store'])->name('present.panitia.store');
+
+// Portal Voting Kakak Panitia Terfavorit (Public)
+Route::get('/voting-panitia', [FavoriteCommitteeController::class, 'publicView'])->name('voting.panitia');
+Route::post('/voting-panitia/vote', [FavoriteCommitteeController::class, 'vote'])->name('voting.panitia.vote');
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
@@ -66,6 +71,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/committee-sections', [CommitteeSectionController::class, 'store'])->name('committee-sections.store');
         Route::delete('/committee-sections/{committeeSection}', [CommitteeSectionController::class, 'destroy'])->name('committee-sections.destroy');
         Route::delete('/committee-sections/attendance/{attendance}', [CommitteeSectionController::class, 'destroyAttendance'])->name('committee-sections.destroy-attendance');
+
+        // Kelola Candidate & Hasil Voting Panitia Terfavorit
+        Route::get('/favorite-candidates', [FavoriteCommitteeController::class, 'adminIndex'])->name('favorite-candidates.index');
+        Route::post('/favorite-candidates', [FavoriteCommitteeController::class, 'storeCandidate'])->name('favorite-candidates.store');
+        Route::delete('/favorite-candidates/{candidate}', [FavoriteCommitteeController::class, 'destroyCandidate'])->name('favorite-candidates.destroy');
+        Route::post('/favorite-candidates/reset-votes', [FavoriteCommitteeController::class, 'resetVotes'])->name('favorite-candidates.reset-votes');
     });
 });
 

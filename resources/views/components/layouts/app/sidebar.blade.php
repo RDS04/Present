@@ -20,6 +20,7 @@
                     <flux:navlist.item icon="calendar" :href="route('event-days.index')" :current="request()->routeIs('event-days.*')" wire:navigate>Kelola Sesi Acara</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('groups.index')" :current="request()->routeIs('groups.*')" wire:navigate>Kelola Gugus</flux:navlist.item>
                     <flux:navlist.item icon="briefcase" :href="route('committee-sections.index')" :current="request()->routeIs('committee-sections.*')" wire:navigate>Seksi / Divisi Panitia</flux:navlist.item>
+                    <flux:navlist.item icon="sparkles" :href="route('favorite-candidates.index')" :current="request()->routeIs('favorite-candidates.*')" wire:navigate>Voting Panitia Terfavorit</flux:navlist.item>
                     @endif
                 </flux:navlist.group>
 
