@@ -309,34 +309,59 @@
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Vote -->
+    <!-- Modal Konfirmasi Vote & Input Form Nama/NIM -->
     <div id="confirmVoteModal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center">
+        <div class="bg-slate-900 border border-purple-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-left">
             <div class="w-16 h-16 rounded-3xl bg-purple-600/20 border border-purple-500/40 text-purple-400 flex items-center justify-center font-black text-3xl mx-auto mb-4 shadow-inner">
                 👑
             </div>
 
-            <h3 class="text-xl font-black text-white mb-2">
-                Konfirmasi Pilihan Voting
+            <h3 class="text-xl font-black text-white text-center mb-1">
+                Formulir Voting Kakak Panitia
             </h3>
-
-            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
-                Apakah Anda yakin ingin memilih <strong id="confirmCandidateName" class="text-amber-300 font-extrabold">--</strong> (<span id="confirmCandidateSection">--</span>) sebagai Kakak Panitia Terfavorit?
-                <br><br>
-                <span class="text-rose-400 font-semibold text-xs bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20 inline-block">
-                    ⚠️ Pilihan Anda tidak dapat diubah setelah dikirim.
-                </span>
+            <p class="text-xs text-slate-300 text-center mb-5">
+                Pilihan Anda: <strong id="confirmCandidateName" class="text-amber-300 font-extrabold">--</strong> (<span id="confirmCandidateSection">--</span>)
             </p>
 
-            <div class="flex items-center justify-center gap-3">
-                <button type="button" onclick="closeVoteConfirmation()" class="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-2xl transition">
-                    Batal
-                </button>
-                <button type="button" id="btnSubmitVote" onclick="submitVoteProcess()" class="w-1/2 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
-                    <span id="btnSubmitVoteText">Ya, Kirim Vote</span>
-                    <span id="btnSubmitVoteSpinner" class="hidden animate-spin">⏳</span>
-                </button>
-            </div>
+            <form id="voteForm" onsubmit="event.preventDefault(); submitVoteProcess();" class="space-y-4">
+                <div>
+                    <label for="voterNameInput" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Nama Lengkap <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="text" 
+                           id="voterNameInput" 
+                           required 
+                           placeholder="Masukkan Nama Lengkap Anda" 
+                           class="w-full px-4 py-3 bg-slate-950 border border-white/15 rounded-2xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+                    <p id="voterNameError" class="hidden text-rose-400 text-[11px] mt-1 font-semibold"></p>
+                </div>
+
+                <div>
+                    <label for="voterNimInput" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        NIM (Nomor Induk Mahasiswa) <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="text" 
+                           id="voterNimInput" 
+                           required 
+                           placeholder="Masukkan NIM Anda" 
+                           class="w-full px-4 py-3 bg-slate-950 border border-white/15 rounded-2xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+                    <p id="voterNimError" class="hidden text-rose-400 text-[11px] mt-1 font-semibold"></p>
+                </div>
+
+                <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] leading-relaxed">
+                    ⚠️ <strong>Perhatian:</strong> Pastikan Nama &amp; NIM terisi dengan benar. Hak suara hanya dapat digunakan 1 kali dan pilihan tidak dapat diubah setelah dikirim.
+                </div>
+
+                <div class="flex items-center justify-center gap-3 pt-2">
+                    <button type="button" onclick="closeVoteConfirmation()" class="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-2xl transition">
+                        Batal
+                    </button>
+                    <button type="submit" id="btnSubmitVote" class="w-1/2 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+                        <span id="btnSubmitVoteText">Kirim Vote 🚀</span>
+                        <span id="btnSubmitVoteSpinner" class="hidden animate-spin">⏳</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -404,6 +429,13 @@
             currentSelectedCandidate = candidate;
             document.getElementById('confirmCandidateName').textContent = candidate.name;
             document.getElementById('confirmCandidateSection').textContent = candidate.section || 'Panitia';
+            
+            // Clear input fields and errors
+            document.getElementById('voterNameInput').value = '';
+            document.getElementById('voterNimInput').value = '';
+            document.getElementById('voterNameError').classList.add('hidden');
+            document.getElementById('voterNimError').classList.add('hidden');
+
             document.getElementById('confirmVoteModal').classList.remove('hidden');
         }
 
@@ -415,6 +447,34 @@
         // Submit Vote AJAX Process
         async function submitVoteProcess() {
             if (!currentSelectedCandidate) return;
+
+            const voterNameInput = document.getElementById('voterNameInput');
+            const voterNimInput = document.getElementById('voterNimInput');
+            const voterNameError = document.getElementById('voterNameError');
+            const voterNimError = document.getElementById('voterNimError');
+
+            const voterName = voterNameInput.value.trim();
+            const voterNim = voterNimInput.value.trim();
+
+            let hasError = false;
+
+            if (!voterName) {
+                voterNameError.textContent = 'Nama lengkap wajib diisi.';
+                voterNameError.classList.remove('hidden');
+                hasError = true;
+            } else {
+                voterNameError.classList.add('hidden');
+            }
+
+            if (!voterNim) {
+                voterNimError.textContent = 'NIM wajib diisi.';
+                voterNimError.classList.remove('hidden');
+                hasError = true;
+            } else {
+                voterNimError.classList.add('hidden');
+            }
+
+            if (hasError) return;
 
             const btnText = document.getElementById('btnSubmitVoteText');
             const btnSpinner = document.getElementById('btnSubmitVoteSpinner');
@@ -434,6 +494,8 @@
                     },
                     body: JSON.stringify({
                         candidate_id: currentSelectedCandidate.id,
+                        voter_name: voterName,
+                        voter_nim: voterNim,
                         device_uuid: getDeviceUuid()
                     })
                 });

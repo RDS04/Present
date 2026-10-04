@@ -12,6 +12,8 @@ class FavoriteCommitteeVote extends Model
 
     protected $fillable = [
         'candidate_id',
+        'voter_name',
+        'voter_nim',
         'voter_identifier',
         'ip_address',
         'user_agent',

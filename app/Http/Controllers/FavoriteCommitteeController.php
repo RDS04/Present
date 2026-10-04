@@ -74,13 +74,19 @@ class FavoriteCommitteeController extends Controller
     {
         $validated = $request->validate([
             'candidate_id' => ['required', 'exists:favorite_committee_candidates,id'],
+            'voter_name' => ['required', 'string', 'max:150'],
+            'voter_nim' => ['required', 'string', 'max:50'],
             'device_uuid' => ['nullable', 'string'],
         ], [
             'candidate_id.required' => 'Pilih salah satu kandidat panitia.',
             'candidate_id.exists' => 'Kandidat panitia tidak ditemukan.',
+            'voter_name.required' => 'Nama lengkap wajib diisi.',
+            'voter_nim.required' => 'NIM (Nomor Induk Mahasiswa) wajib diisi.',
         ]);
 
         $candidateId = (int) $validated['candidate_id'];
+        $voterName = trim($validated['voter_name']);
+        $voterNim = trim($validated['voter_nim']);
         $ip = $request->ip();
         $userAgent = $request->userAgent();
 
@@ -102,11 +108,13 @@ class FavoriteCommitteeController extends Controller
 
         // 3. Simpan vote secara atomic / transaction
         try {
-            DB::transaction(function () use ($candidateId, $voterIdentifier, $ip, $userAgent, &$candidate) {
+            DB::transaction(function () use ($candidateId, $voterName, $voterNim, $voterIdentifier, $ip, $userAgent, &$candidate) {
                 $candidate = FavoriteCommitteeCandidate::lockForUpdate()->findOrFail($candidateId);
 
                 FavoriteCommitteeVote::create([
                     'candidate_id' => $candidate->id,
+                    'voter_name' => $voterName,
+                    'voter_nim' => $voterNim,
                     'voter_identifier' => $voterIdentifier,
                     'ip_address' => $ip,
                     'user_agent' => $userAgent,
@@ -140,8 +148,15 @@ class FavoriteCommitteeController extends Controller
      */
     public function adminIndex(): View
     {
-        $candidates = FavoriteCommitteeCandidate::orderBy('votes_count', 'desc')
+        $candidates = FavoriteCommitteeCandidate::with(['votes' => function($q) {
+                $q->latest();
+            }])
+            ->orderBy('votes_count', 'desc')
             ->orderBy('name', 'asc')
+            ->get();
+
+        $allVotes = FavoriteCommitteeVote::with('candidate')
+            ->latest()
             ->get();
 
         $totalVotes = $candidates->sum('votes_count');
@@ -150,6 +165,7 @@ class FavoriteCommitteeController extends Controller
 
         return view('admin.favorite_candidates.index', compact(
             'candidates',
+            'allVotes',
             'totalVotes',
             'totalCandidates',
             'topCandidate'

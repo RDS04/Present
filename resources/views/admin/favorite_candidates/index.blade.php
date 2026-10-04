@@ -191,45 +191,158 @@
                                     </div>
                                 </div>
 
-                                <!-- Vote Count & Actions -->
-                                <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
-                                    <div class="text-left sm:text-right">
-                                        <div class="font-black text-lg text-slate-900 leading-none">
-                                            {{ number_format($candidate->votes_count) }} <span class="text-xs font-semibold text-slate-500">Suara</span>
+                                    <!-- Vote Count & Actions -->
+                                    <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+                                        <div class="text-left sm:text-right">
+                                            <div class="font-black text-lg text-slate-900 leading-none">
+                                                {{ number_format($candidate->votes_count) }} <span class="text-xs font-semibold text-slate-500">Suara</span>
+                                            </div>
+                                            <div class="text-[11px] font-bold text-indigo-600 mt-0.5">
+                                                {{ $percent }}% Dari Total
+                                            </div>
                                         </div>
-                                        <div class="text-[11px] font-bold text-indigo-600 mt-0.5">
-                                            {{ $percent }}% Dari Total
-                                        </div>
-                                    </div>
 
-                                    <!-- Reset Single Candidate Vote Button -->
-                                    @if($candidate->votes_count > 0)
-                                        <form method="POST" action="{{ route('favorite-candidates.reset-candidate', $candidate->id) }}" onsubmit="confirmResetCandidate(event, this, '{{ addslashes($candidate->name) }}', {{ $candidate->votes_count }})">
+                                        @if($candidate->votes_count > 0)
+                                            <!-- Lihat Pemilih Button -->
+                                            <button type="button" 
+                                                    onclick="showVotersModal({{ json_encode($candidate->name) }}, {{ json_encode($candidate->votes) }})"
+                                                    class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-xl transition flex items-center gap-1 font-extrabold text-xs shadow-sm" 
+                                                    title="Lihat Daftar Pemilih (Nama & NIM)">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                <span>Lihat Pemilih</span>
+                                            </button>
+
+                                            <!-- Reset Single Candidate Vote Button -->
+                                            <form method="POST" action="{{ route('favorite-candidates.reset-candidate', $candidate->id) }}" onsubmit="confirmResetCandidate(event, this, '{{ addslashes($candidate->name) }}', {{ $candidate->votes_count }})">
+                                                @csrf
+                                                <button type="submit" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/80 rounded-xl transition flex items-center gap-1 font-extrabold text-xs shadow-sm" title="Reset Suara Kandidat Ini">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                                    <span>Reset Suara</span>
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <!-- Delete Button -->
+                                        <form method="POST" action="{{ route('favorite-candidates.destroy', $candidate->id) }}" onsubmit="confirmDeleteCandidate(event, this, '{{ addslashes($candidate->name) }}')">
                                             @csrf
-                                            <button type="submit" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/80 rounded-xl transition flex items-center gap-1 font-extrabold text-xs shadow-sm" title="Reset Suara Kandidat Ini">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                                <span>Reset Suara</span>
+                                            @method('DELETE')
+                                            <button type="submit" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition" title="Hapus Kandidat">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>
-                                    @endif
-
-                                    <!-- Delete Button -->
-                                    <form method="POST" action="{{ route('favorite-candidates.destroy', $candidate->id) }}" onsubmit="confirmDeleteCandidate(event, this, '{{ addslashes($candidate->name) }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition" title="Hapus Kandidat">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        </button>
-                                    </form>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
             </div>
+
         </div>
 
-    </div>
+        <!-- Log Data Pemilih (Nama & NIM) -->
+        <div class="mt-8 bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        📜 Detail &amp; Log Data Pemilih Voting
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Daftar Nama dan NIM mahasiswa yang telah memberikan suara voting panitia terfavorit.</p>
+                </div>
+                <!-- Search Box for Voters -->
+                <div class="relative w-full sm:w-72">
+                    <input type="text" 
+                           id="voterTableSearch" 
+                           onkeyup="filterVoterTable()" 
+                           placeholder="Cari nama, NIM, atau panitia..." 
+                           class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+            </div>
+
+            @if(!isset($allVotes) || $allVotes->isEmpty())
+                <div class="text-center py-10 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <div class="text-4xl mb-2">🗳️</div>
+                    <h3 class="text-sm font-bold text-slate-700">Belum Ada Data Pemilih</h3>
+                    <p class="text-xs text-slate-400 mt-1">Belum ada suara yang masuk dari peserta PKKMB.</p>
+                </div>
+            @else
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                    <table class="w-full text-left border-collapse" id="voterLogTable">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                                <th class="py-3 px-4">#</th>
+                                <th class="py-3 px-4">Nama Pemilih</th>
+                                <th class="py-3 px-4">NIM Pemilih</th>
+                                <th class="py-3 px-4">Kandidat Pilihan</th>
+                                <th class="py-3 px-4">Divisi / Seksi</th>
+                                <th class="py-3 px-4">Waktu Voting</th>
+                                <th class="py-3 px-4">IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200/80 text-xs font-medium text-slate-800">
+                            @foreach($allVotes as $idx => $vote)
+                                <tr class="voter-row hover:bg-slate-50/80 transition">
+                                    <td class="py-3 px-4 font-bold text-slate-400">{{ $idx + 1 }}</td>
+                                    <td class="py-3 px-4 font-bold text-slate-900 flex items-center gap-2">
+                                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-[10px]">
+                                            👤
+                                        </span>
+                                        <span>{{ $vote->voter_name ?? 'N/A' }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-[11px] font-bold text-slate-700">
+                                            {{ $vote->voter_nim ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 font-extrabold text-purple-700">
+                                        {{ $vote->candidate ? $vote->candidate->name : 'Kandidat Dihapus' }}
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-500">
+                                        {{ $vote->candidate ? $vote->candidate->section : '-' }}
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-500 whitespace-nowrap">
+                                        {{ $vote->created_at ? $vote->created_at->translatedFormat('d M Y, H:i') : '-' }}
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                                        {{ $vote->ip_address ?? '-' }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
+        <!-- Modal Detail Pemilih Per Kandidat -->
+        <div id="candidateVotersModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative">
+                <button type="button" onclick="closeVotersModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-xl">
+                    &times;
+                </button>
+                <h3 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                    👥 Data Pemilih: <span id="modalCandidateVotersName" class="text-purple-600 font-extrabold">--</span>
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">Daftar mahasiswa (Nama &amp; NIM) yang memilih kandidat ini.</p>
+
+                <div class="max-h-80 overflow-y-auto rounded-2xl border border-slate-200">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-500 sticky top-0">
+                            <tr>
+                                <th class="py-2 px-3">#</th>
+                                <th class="py-2 px-3">Nama Pemilih</th>
+                                <th class="py-2 px-3">NIM Pemilih</th>
+                                <th class="py-2 px-3">Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalVotersTableBody" class="divide-y divide-slate-100">
+                            <!-- Populated via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
     <!-- SweetAlert2 Library & Custom Dialog Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -322,6 +435,50 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();
+                }
+            });
+        }
+
+        // Show per-candidate voters in modal
+        function showVotersModal(candidateName, votes) {
+            document.getElementById('modalCandidateVotersName').textContent = candidateName;
+            const tbody = document.getElementById('modalVotersTableBody');
+            tbody.innerHTML = '';
+
+            if (!votes || votes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada data pemilih.</td></tr>`;
+            } else {
+                votes.forEach((v, idx) => {
+                    const dateStr = v.created_at ? new Date(v.created_at).toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-2.5 px-3 font-bold text-slate-400">${idx + 1}</td>
+                            <td class="py-2.5 px-3 font-bold text-slate-900">${v.voter_name || 'N/A'}</td>
+                            <td class="py-2.5 px-3"><span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-[11px] font-bold text-slate-700">${v.voter_nim || 'N/A'}</span></td>
+                            <td class="py-2.5 px-3 text-slate-500 text-[11px]">${dateStr}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('candidateVotersModal').classList.remove('hidden');
+        }
+
+        function closeVotersModal() {
+            document.getElementById('candidateVotersModal').classList.add('hidden');
+        }
+
+        // Filter log table by voter name, NIM, or candidate
+        function filterVoterTable() {
+            const q = document.getElementById('voterTableSearch').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#voterLogTable .voter-row');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(q)) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
                 }
             });
         }
