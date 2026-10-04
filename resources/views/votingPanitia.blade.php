@@ -165,11 +165,6 @@
                 <div class="text-6xl mb-4">📷</div>
                 <h3 class="text-lg font-bold text-white">Belum Ada Kandidat Panitia</h3>
                 <p class="text-xs text-slate-400 mt-1">Admin belum menginputkan foto dan data kandidat Panitia Terfavorit.</p>
-                @auth
-                    <a href="{{ route('favorite-candidates.index') }}" class="inline-block mt-4 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold rounded-xl transition shadow-lg">
-                        + Input Kandidat via Admin
-                    </a>
-                @endauth
             </div>
         @else
             <div id="candidatesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

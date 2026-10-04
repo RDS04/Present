@@ -158,6 +158,7 @@
                 Login
             </a>
             @endauth
+        </flux:header>
 
         {{ $slot }}
 
