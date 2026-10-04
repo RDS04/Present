@@ -23,12 +23,11 @@ class FavoriteCommitteeController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        // Ambil voter identifier dari Cookie atau Session/IP
+        // Ambil voter identifier dari Cookie
         $voterUuid = $request->cookie('voter_uuid');
         $cookieVotedId = $request->cookie('voted_candidate_id');
-        $ip = $request->ip();
 
-        $voterIdentifier = $voterUuid ? md5($voterUuid . '_' . $ip) : null;
+        $voterIdentifier = $voterUuid ? md5('voter_' . $voterUuid) : null;
 
         $hasVoted = false;
         $votedCandidateId = null;
@@ -42,15 +41,6 @@ class FavoriteCommitteeController extends Controller
             if ($voteRecord) {
                 $hasVoted = true;
                 $votedCandidateId = $voteRecord->candidate_id;
-            }
-        }
-
-        if (!$hasVoted && $ip) {
-            // Cek cadangan berdasarkan IP saja jika cookie dibersihkan
-            $ipVote = FavoriteCommitteeVote::where('ip_address', $ip)->first();
-            if ($ipVote) {
-                $hasVoted = true;
-                $votedCandidateId = $ipVote->candidate_id;
             }
         }
 
@@ -93,7 +83,7 @@ class FavoriteCommitteeController extends Controller
 
         // Ambil UUID dari cookie atau payload request, atau buat baru
         $voterUuid = $request->cookie('voter_uuid') ?? $request->input('device_uuid') ?? Str::uuid()->toString();
-        $voterIdentifier = md5($voterUuid . '_' . $ip);
+        $voterIdentifier = md5('voter_' . $voterUuid);
 
         // 1. Cek apakah sudah pernah voting via cookie
         if ($request->cookie('voted_candidate_id')) {
@@ -104,22 +94,19 @@ class FavoriteCommitteeController extends Controller
             return response()->json([
                 'success' => false,
                 'already_voted' => true,
-                'message' => "Anda sudah melakukan voting sebelumnya untuk Kakak {$cName}! Setiap pengguna hanya diperbolehkan memilih 1 kali.",
+                'message' => "Anda sudah melakukan voting sebelumnya! Setiap perangkat hanya diperbolehkan memilih 1 kali.",
                 'voted_candidate_id' => $existingId,
             ], 422);
         }
 
         // 2. Cek apakah voter_identifier sudah ada di database
-        $existingVote = FavoriteCommitteeVote::where('voter_identifier', $voterIdentifier)
-            ->orWhere('ip_address', $ip)
-            ->first();
+        $existingVote = FavoriteCommitteeVote::where('voter_identifier', $voterIdentifier)->first();
 
         if ($existingVote) {
-            $candidateName = $existingVote->candidate ? $existingVote->candidate->name : 'kandidat lain';
             return response()->json([
                 'success' => false,
                 'already_voted' => true,
-                'message' => "Perangkat atau koneksi internet Anda sudah digunakan untuk memilih Kakak {$candidateName}. Anda tidak dapat memilih kembali.",
+                'message' => "Perangkat Anda sudah digunakan untuk melakukan voting. Anda tidak dapat memilih kembali.",
                 'voted_candidate_id' => $existingVote->candidate_id,
             ], 422)->cookie('voted_candidate_id', $existingVote->candidate_id, 525600);
         }
